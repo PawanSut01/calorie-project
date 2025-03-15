@@ -1,0 +1,15 @@
+jupyter
+flask
+ipywidgets
+numpy
+tensorflow
+matplotlib
+seaborn
+h5py
+scikit-learn
+keras
+flask
+google-generativeai
+Pillow
+werkzeug
+gunicorn
