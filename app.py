@@ -450,49 +450,82 @@ from keras.models import load_model
 # print("Model Loaded Successfully!")
 
 
-# Define the Google Drive direct download link and model path
-GDRIVE_URL = "https://drive.google.com/uc?export=download&id=1cJt6ifr4aTdPj_R7sFJ86Kfz0b43HWFV"
-MODEL_PATH = "./tmp/model_trained_101class.keras"  # Store in the temporary directory
+# # Define the Google Drive direct download link and model path
+# GDRIVE_URL = "https://drive.google.com/uc?export=download&id=1cJt6ifr4aTdPj_R7sFJ86Kfz0b43HWFV"
+# MODEL_PATH = "./tmp/model_trained_101class.keras"  # Store in the temporary directory
 
 
-def download_model():
-    """Download the model from Google Drive if not already present."""
+# def download_model():
+#     """Download the model from Google Drive if not already present."""
+#     print(f"Current working directory: {os.getcwd()}")
+#     print(f"Model will be saved at: {MODEL_PATH}")
+
+#     if not os.path.exists(MODEL_PATH):
+#         print("Downloading model...")
+
+#         # Start a session to handle cookies
+#         session = requests.Session()
+#         response = session.get(GDRIVE_URL, stream=True)
+
+#         # Check for a Google Drive confirmation token (for large files)
+#         for key, value in response.cookies.items():
+#             if key.startswith("download_warning"):
+#                 GDRIVE_URL_with_token = GDRIVE_URL + "&confirm=" + value
+#                 response = session.get(GDRIVE_URL_with_token, stream=True)
+
+#         # Download the file in chunks
+#         with open(MODEL_PATH, "wb") as file:
+#             for chunk in response.iter_content(chunk_size=1024):
+#                 if chunk:
+#                     file.write(chunk)
+
+#         print("Download complete.")
+#         if os.path.exists(MODEL_PATH):
+#             print(f"Current working directory: {os.getcwd()}")
+#             # print("Downloading model...")
+#     else:
+#         print("Model already exists.")
+
+
+# # Ensure model is available before loading
+# download_model()
+
+# # Load the model
+# model_best = load_model(MODEL_PATH, compile=False)
+# print("Model Loaded Successfully!")
+
+# Path where Git LFS stores the model
+MODEL_PATH = "./model_trained_101class.keras"  # This should now point to where the model is stored by Git LFS
+
+def download_model_with_git_lfs():
+    """Ensure that the model is downloaded using Git LFS, if it's not already available."""
     print(f"Current working directory: {os.getcwd()}")
     print(f"Model will be saved at: {MODEL_PATH}")
 
+    # Git LFS will automatically fetch the model when pulling or cloning the repo
     if not os.path.exists(MODEL_PATH):
-        print("Downloading model...")
+        print("Model not found locally, attempting to fetch with Git LFS...")
 
-        # Start a session to handle cookies
-        session = requests.Session()
-        response = session.get(GDRIVE_URL, stream=True)
+        # Git LFS fetch command (it should be done outside Python, through Git LFS in the repo)
+        os.system("git lfs pull")
 
-        # Check for a Google Drive confirmation token (for large files)
-        for key, value in response.cookies.items():
-            if key.startswith("download_warning"):
-                GDRIVE_URL_with_token = GDRIVE_URL + "&confirm=" + value
-                response = session.get(GDRIVE_URL_with_token, stream=True)
-
-        # Download the file in chunks
-        with open(MODEL_PATH, "wb") as file:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    file.write(chunk)
-
-        print("Download complete.")
-        if os.path.exists(MODEL_PATH):
-            print(f"Current working directory: {os.getcwd()}")
-            # print("Downloading model...")
+        # Check if the model file is now available after pulling
+        if not os.path.exists(MODEL_PATH):
+            raise FileNotFoundError(f"Model file {MODEL_PATH} is still not found after Git LFS pull.")
+        else:
+            print(f"Model file {MODEL_PATH} fetched successfully from Git LFS.")
     else:
         print("Model already exists.")
 
-
 # Ensure model is available before loading
-download_model()
+download_model_with_git_lfs()
 
 # Load the model
-model_best = load_model(MODEL_PATH, compile=False)
-print("Model Loaded Successfully!")
+try:
+    model_best = load_model(MODEL_PATH, compile=False)
+    print("Model Loaded Successfully!")
+except Exception as e:
+    print(f"Error loading model: {e}")
 
 # Load nutrition data from CSV file
 nutrition_table = dict()
